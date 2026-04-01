@@ -1,73 +1,82 @@
-# React + TypeScript + Vite
+# piston-meta-2-mrpack
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Generate [Modrinth `.mrpack`](https://docs.modrinth.com/docs/modpacks/format/) modpacks from Minecraft version metadata served by [piston-meta.mojang.com](https://piston-meta.mojang.com).
 
-Currently, two official plugins are available:
+**Demo:** [pm2m.krnl64.win](https://pm2m.krnl64.win)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+- Browse all Minecraft releases and snapshots from the official version manifest
+- Paste a piston-meta JSON URL directly (e.g. snapshot or experiment versions)
+- Configure pack name, version, summary, and mod loader (Vanilla, Fabric, Quilt, Forge, NeoForge)
+- Download the generated `.mrpack` or copy a shareable direct-download link
+- Runs entirely on Cloudflare Workers — no server required
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+- **Runtime:** [Cloudflare Workers](https://workers.cloudflare.com/)
+- **Frontend:** [React](https://react.dev/) + [Fluent UI v9](https://react.fluentui.dev/)
+- **Build:** [Vite](https://vite.dev/) + [Bun](https://bun.sh/)
+- **ZIP:** [fflate](https://github.com/101arrowz/fflate)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Getting Started
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Prerequisites
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- [Bun](https://bun.sh/) installed
+- A [Cloudflare](https://cloudflare.com/) account (for deployment)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Install
+
+```sh
+bun install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Develop
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+bun run dev
 ```
+
+### Build
+
+```sh
+bun run build
+```
+
+### Deploy
+
+```sh
+bun run deploy
+```
+
+## API
+
+All API endpoints are served by the Cloudflare Worker.
+
+### `GET /api/versions`
+
+Proxies the Minecraft version manifest from piston-meta.mojang.com.
+
+### `GET /api/version-detail?url=<piston-meta-url>`
+
+Proxies individual version metadata.
+
+### `GET|POST /api/generate`
+
+Generates an `.mrpack` file.
+
+**Query parameters / JSON body:**
+
+| Parameter       | Required | Description                                        |
+| --------------- | -------- | -------------------------------------------------- |
+| `versionUrl`    | Yes      | piston-meta.mojang.com version JSON URL            |
+| `packName`      | No       | Pack display name (defaults to `Vanilla <version>`) |
+| `packVersion`   | No       | Pack version string (defaults to `1.0.0`)          |
+| `loader`        | No       | Mod loader: `vanilla`, `fabric`, `quilt`, `forge`, `neoforge` |
+| `loaderVersion` | No       | Mod loader version                                 |
+| `summary`       | No       | Short pack description                             |
+
+## License
+
+[GPL-3.0](LICENSE)
